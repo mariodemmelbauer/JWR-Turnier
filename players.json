@@ -1,0 +1,33 @@
+{
+  "players": [
+    "BF",
+    "KK",
+    "JA",
+    "SA",
+    "BB",
+    "VD",
+    "OK",
+    "EK",
+    "DK",
+    "FL",
+    "LN",
+    "RP",
+    "JR",
+    "CS",
+    "NZ",
+    "SB",
+    "FA",
+    "DW",
+    "NF",
+    "BK",
+    "TS"
+  ],
+  "unavailable_players": [
+    "TS",
+    "NF",
+    "DW",
+    "BK",
+    "BF",
+    "KK"
+  ]
+}
