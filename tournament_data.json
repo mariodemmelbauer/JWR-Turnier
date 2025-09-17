@@ -22,14 +22,73 @@
     "BK",
     "TS"
   ],
-  "unavailable_players": [],
-  "teams": {},
-  "team_colors": {},
+  "unavailable_players": [
+    "BF",
+    "KK",
+    "JA"
+  ],
+  "teams": {
+    "Team A": [
+      "VD",
+      "TS",
+      "LN",
+      "SA",
+      "OK",
+      "NF",
+      "DW",
+      "RP",
+      "FA"
+    ],
+    "Team B": [
+      "FL",
+      "CS",
+      "EK",
+      "JR",
+      "NZ",
+      "BB",
+      "BK",
+      "DK",
+      "SB"
+    ]
+  },
+  "team_colors": {
+    "Team A": "grün",
+    "Team B": "gelb"
+  },
   "tournament_type": "Feste Teams",
-  "schedule": [],
+  "schedule": [
+    {
+      "team1": "Team A",
+      "team2": "Team B",
+      "players1": [
+        "VD",
+        "TS",
+        "LN",
+        "SA",
+        "OK",
+        "NF",
+        "DW",
+        "RP",
+        "FA"
+      ],
+      "players2": [
+        "FL",
+        "CS",
+        "EK",
+        "JR",
+        "NZ",
+        "BB",
+        "BK",
+        "DK",
+        "SB"
+      ],
+      "score1": "",
+      "score2": ""
+    }
+  ],
   "tournament_name": "JWR-Turnier",
   "tournament_date": "2025-09-17",
-  "num_teams": 4,
+  "num_teams": 2,
   "home_away": false,
   "players_per_team": 2,
   "num_fields": 1

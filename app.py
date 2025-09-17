@@ -45,6 +45,8 @@ if 'num_fields' not in st.session_state:
     st.session_state.num_fields = 1
 if 'team_selection' not in st.session_state:
     st.session_state.team_selection = 'JWR'
+if 'games_per_player' not in st.session_state:
+    st.session_state.games_per_player = 3
 
 # Verfügbare Team-Farben
 TEAM_COLORS = {
@@ -1153,6 +1155,8 @@ def main():
     
     st.session_state.tournament_type = tournament_type
     
+    # Initialisiere session state für Widgets die nur Keys verwenden
+    # Diese Werte werden bereits in der Session State Initialisierung gesetzt
     
     # Spieler-Management - Kompakt
     with st.expander("👥 Spieler-Management", expanded=True):
@@ -1175,11 +1179,9 @@ def main():
             with col_add2:
                 # Team-Auswahl für Laden
                 team_options = ["U15", "U16", "U18", "JWR"]
-                default_index = team_options.index(st.session_state.team_selection) if st.session_state.team_selection in team_options else 3
                 selected_team = st.selectbox(
                     "Team auswählen:",
                     team_options,
-                    index=default_index,
                     key="team_selection",
                     help="Wählen Sie ein Team aus, um die entsprechenden Spieler zu laden"
                 )
@@ -1328,11 +1330,9 @@ def main():
             # Turnier-Einstellungen - kompakt
             col1, col2, col3 = st.columns(3)
             with col1:
-                num_teams = st.number_input("Teams:", min_value=2, max_value=len(st.session_state.players), value=st.session_state.num_teams, help="Anzahl der Teams")
-                st.session_state.num_teams = num_teams
+                num_teams = st.number_input("Teams:", min_value=2, max_value=len(st.session_state.players), key="num_teams", help="Anzahl der Teams")
             with col2:
-                home_away = st.checkbox("Hin- & Rückrunde", value=st.session_state.home_away, help="Jedes Team spielt zu Hause und auswärts")
-                st.session_state.home_away = home_away
+                home_away = st.checkbox("Hin- & Rückrunde", key="home_away", help="Jedes Team spielt zu Hause und auswärts")
             with col3:
                 st.write("Spielfelder:")
                 col_fields1, col_fields2, col_fields3 = st.columns([1, 1, 1])
@@ -1350,7 +1350,7 @@ def main():
                             st.rerun()
         
             # Teams erstellen
-            team_names = [f"Team {chr(65 + i)}" for i in range(num_teams)]
+            team_names = [f"Team {chr(65 + i)}" for i in range(st.session_state.num_teams)]
             
             # Buttons für Team-Management - kompakt
             col_btn1, col_btn2, col_btn3 = st.columns([1, 1, 2])
@@ -1387,8 +1387,8 @@ def main():
                             st.stop()
                         
                         random.shuffle(available_players)
-                        players_per_team = len(available_players) // num_teams
-                        remainder = len(available_players) % num_teams
+                        players_per_team = len(available_players) // st.session_state.num_teams
+                        remainder = len(available_players) % st.session_state.num_teams
                         
                         st.session_state.teams = {}
                         available_colors = list(TEAM_COLORS.keys())
@@ -1420,7 +1420,7 @@ def main():
                         
                         # Verteile Spieler gleichmäßig
                         for i, player in enumerate(available_players):
-                            team_index = i % num_teams
+                            team_index = i % st.session_state.num_teams
                             team_name = team_names[team_index]
                             st.session_state.teams[team_name].append(player)
                         
@@ -1431,10 +1431,10 @@ def main():
                             st.error("Nicht genügend verfügbare Spieler für Teams!")
                             st.stop()
                         
-                        players_per_team = len(available_players) // num_teams
+                        players_per_team = len(available_players) // st.session_state.num_teams
                         if len(available_players) % players_per_team != 0:
-                            st.warning(f"Für Round Robin werden {num_teams * players_per_team} Spieler verwendet.")
-                            players = available_players[:num_teams * players_per_team]
+                            st.warning(f"Für Round Robin werden {st.session_state.num_teams * players_per_team} Spieler verwendet.")
+                            players = available_players[:st.session_state.num_teams * players_per_team]
                         else:
                             players = available_players
                         
@@ -1492,7 +1492,7 @@ def main():
         teams_to_show = teams_with_players.copy()
         
         # Füge ein leeres Team hinzu, wenn noch nicht alle Teams besetzt sind
-        if len(teams_with_players) < num_teams:
+        if len(teams_with_players) < st.session_state.num_teams:
             for team_name in team_names:
                 if team_name not in teams_to_show:
                     teams_to_show.append(team_name)
@@ -1508,10 +1508,14 @@ def main():
             col_color1, col_color2 = st.columns([1, 3])
             with col_color1:
                 current_color = st.session_state.team_colors.get(team_name, "gelb")
+                
+                # Initialisiere session state für Team-Farbe falls noch nicht vorhanden
+                if f"color_{team_name}" not in st.session_state:
+                    st.session_state[f"color_{team_name}"] = current_color
+                
                 selected_color = st.selectbox(
                     "Farbe:",
                     list(TEAM_COLORS.keys()),
-                    index=list(TEAM_COLORS.keys()).index(current_color),
                     key=f"color_{team_name}",
                     help="Wähle eine Farbe für das Team"
                 )
@@ -1532,11 +1536,14 @@ def main():
                 available_players.extend(current_team_players)
                 available_players = list(dict.fromkeys(available_players))  # Entferne Duplikate
                 
+            # Initialisiere session state für dieses Team falls noch nicht vorhanden
+            if f"team_{team_name}" not in st.session_state:
+                st.session_state[f"team_{team_name}"] = current_team_players
+            
             selected_players = st.multiselect(
                 f"Spieler für {team_name} auswählen:",
                 available_players,
-                key=f"team_{team_name}",
-                default=current_team_players
+                key=f"team_{team_name}"
             )
             st.session_state.teams[team_name] = selected_players
         
@@ -1548,11 +1555,11 @@ def main():
                 st.error(f"Mindestens 2 Teams mit Spielern erforderlich! Aktuell: {len(teams_with_players)} Teams")
                 return
             
-            schedule = generate_fixed_teams_schedule(st.session_state.teams, home_away, st.session_state.num_fields)
+            schedule = generate_fixed_teams_schedule(st.session_state.teams, st.session_state.home_away, st.session_state.num_fields)
             if schedule:
                 st.session_state.schedule = schedule
                 save_tournament_data()  # Automatisch speichern
-                round_type = "Hin- und Rückrunde" if home_away else "Einfache Runde"
+                round_type = "Hin- und Rückrunde" if st.session_state.home_away else "Einfache Runde"
                 st.success(f"Spielplan generiert! {len(teams_with_players)} Teams, {len(schedule)} Spiele ({round_type})")
             else:
                 st.error("Kein gültiger Spielplan möglich!")
@@ -1567,8 +1574,7 @@ def main():
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            players_per_team = st.number_input("Spieler pro Team:", min_value=2, max_value=len(st.session_state.players)//2, value=st.session_state.players_per_team)
-            st.session_state.players_per_team = players_per_team
+            players_per_team = st.number_input("Spieler pro Team:", min_value=2, max_value=len(st.session_state.players)//2, key="players_per_team")
         with col2:
             st.write("Anzahl Spielfelder:")
             col_fields1, col_fields2, col_fields3 = st.columns([1, 1, 1])
@@ -1589,10 +1595,9 @@ def main():
                 "Spiele pro Spieler:",
                 min_value=1,
                 max_value=10,
-                value=st.session_state.get('games_per_player', 3),
+                key="games_per_player",
                 help="Wie viele Spiele soll jeder Spieler spielen?"
             )
-            st.session_state.games_per_player = games_per_player
         
         if st.button("Round Robin Spielplan generieren"):
             # Nur verfügbare Spieler für Round Robin verwenden
@@ -1601,8 +1606,7 @@ def main():
                 st.error("Mindestens 4 verfügbare Spieler für Round Robin erforderlich!")
                 return
             
-            games_per_player = st.session_state.get('games_per_player', 3)
-            schedule = generate_round_robin_schedule(available_players, players_per_team, st.session_state.num_fields, games_per_player)
+            schedule = generate_round_robin_schedule(available_players, st.session_state.players_per_team, st.session_state.num_fields, st.session_state.games_per_player)
             if schedule:
                 st.session_state.schedule = schedule
                 save_tournament_data()  # Automatisch speichern
@@ -1617,11 +1621,9 @@ def main():
         
         col1, col2 = st.columns(2)
         with col1:
-            tournament_name = st.text_input("Turniername:", value=st.session_state.tournament_name)
-            st.session_state.tournament_name = tournament_name
+            tournament_name = st.text_input("Turniername:", key="tournament_name")
         with col2:
-            tournament_date = st.date_input("Datum:", value=st.session_state.tournament_date)
-            st.session_state.tournament_date = tournament_date
+            tournament_date = st.date_input("Datum:", key="tournament_date")
         
         if st.session_state.tournament_type == "Feste Teams":
             st.subheader("Spiele")
@@ -1871,8 +1873,8 @@ def main():
                 pdf_buffer = create_pdf_tournament_schedule(
                     st.session_state.schedule, 
                     st.session_state.tournament_type,
-                    tournament_name,
-                    tournament_date.strftime("%d.%m.%Y"),
+                    st.session_state.tournament_name,
+                    st.session_state.tournament_date.strftime("%d.%m.%Y"),
                     st.session_state.team_colors,
                     st.session_state.num_fields
                 )
@@ -1880,7 +1882,7 @@ def main():
                 st.download_button(
                     label="📥 PDF herunterladen",
                     data=pdf_buffer.getvalue(),
-                    file_name=f"{tournament_name}_{tournament_date.strftime('%Y%m%d')}.pdf",
+                    file_name=f"{st.session_state.tournament_name}_{st.session_state.tournament_date.strftime('%Y%m%d')}.pdf",
                     mime="application/pdf"
                 )
                 st.success("PDF erfolgreich generiert!")
