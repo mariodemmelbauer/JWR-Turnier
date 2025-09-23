@@ -47,3 +47,4 @@ def test_widget_initialization():
 
 if __name__ == "__main__":
     test_widget_initialization()
+
