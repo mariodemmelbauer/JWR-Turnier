@@ -1138,6 +1138,13 @@ def create_pdf_tournament_schedule(schedule, tournament_type, tournament_name, d
     buffer.seek(0)
     return buffer
 
+def update_tournament_name_from_team():
+    """Passt den Turniernamen automatisch an das ausgewählte Akademie-Team an."""
+    selected_team = st.session_state.get("team_selection", "JWR")
+    st.session_state.tournament_name = f"{selected_team}-Turnier"
+    st.session_state.tournament_name_team = selected_team
+
+
 def main():
     st.title("🟢⚫ AKA-Turnier")
     
@@ -1186,10 +1193,18 @@ def main():
             with col_add2:
                 # Team-Auswahl für Laden
                 team_options = ["U15", "U16", "U18", "JWR"]
+                # Beim ersten Start einen alten Standardnamen an das aktuell gewählte Team anpassen.
+                if "tournament_name_team" not in st.session_state:
+                    current_team = st.session_state.get("team_selection", "JWR")
+                    if st.session_state.tournament_name in ("JWR-Turnier", "AKA-Turnier", ""):
+                        st.session_state.tournament_name = f"{current_team}-Turnier"
+                    st.session_state.tournament_name_team = current_team
+
                 selected_team = st.selectbox(
                     "Team auswählen:",
                     team_options,
                     key="team_selection",
+                    on_change=update_tournament_name_from_team,
                     help="Wählen Sie ein Team aus, um die entsprechenden Spieler zu laden"
                 )
                 
