@@ -1139,7 +1139,7 @@ def create_pdf_tournament_schedule(schedule, tournament_type, tournament_name, d
     return buffer
 
 def main():
-    st.title("🟢⚫ JWR-Turnier")
+    st.title("🟢⚫ AKA-Turnier")
     
     # Lade gespeicherte Daten beim Start
     if not hasattr(st.session_state, 'data_loaded'):
