@@ -1141,8 +1141,18 @@ def create_pdf_tournament_schedule(schedule, tournament_type, tournament_name, d
 def update_tournament_name_from_team():
     """Passt den Turniernamen automatisch an das ausgewählte Akademie-Team an."""
     selected_team = st.session_state.get("team_selection", "U15")
-    st.session_state.tournament_name = f"{selected_team}-Turnier"
+    new_name = f"{selected_team}-Turnier"
+    st.session_state.tournament_name = new_name
+    st.session_state.tournament_name_input = new_name
     st.session_state.tournament_name_team = selected_team
+
+
+def update_tournament_name_from_input():
+    """Übernimmt eine manuelle Änderung des Turniernamens."""
+    st.session_state.tournament_name = st.session_state.get(
+        "tournament_name_input",
+        "U15-Turnier"
+    )
 
 
 def main():
@@ -1160,6 +1170,7 @@ def main():
         st.session_state.team_colors = {}
         st.session_state.schedule = []
         st.session_state.tournament_name = "U15-Turnier"
+        st.session_state.tournament_name_input = "U15-Turnier"
         st.session_state.tournament_date = datetime.now().date()
         st.session_state.num_teams = 4
         st.session_state.home_away = False
@@ -1320,6 +1331,7 @@ def main():
                 st.session_state.team_colors = {}
                 st.session_state.schedule = []
                 st.session_state.tournament_name = "U15-Turnier"
+                st.session_state.tournament_name_input = "U15-Turnier"
                 st.session_state.tournament_date = datetime.now().date()
                 st.session_state.num_teams = 4
                 st.session_state.home_away = False
@@ -1661,7 +1673,18 @@ def main():
         
         col1, col2 = st.columns(2)
         with col1:
-            tournament_name = st.text_input("Turniername:", key="tournament_name")
+            expected_name = f"{st.session_state.get('team_selection', 'U15')}-Turnier"
+            if not st.session_state.get("tournament_name"):
+                st.session_state.tournament_name = expected_name
+            if not st.session_state.get("tournament_name_input"):
+                st.session_state.tournament_name_input = st.session_state.tournament_name
+
+            tournament_name = st.text_input(
+                "Turniername:",
+                key="tournament_name_input",
+                on_change=update_tournament_name_from_input
+            )
+            st.session_state.tournament_name = tournament_name
         with col2:
             tournament_date = st.date_input("Datum:", key="tournament_date")
         
