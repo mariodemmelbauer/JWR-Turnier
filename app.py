@@ -40,7 +40,7 @@ if 'team_colors' not in st.session_state:
 if 'schedule' not in st.session_state:
     st.session_state.schedule = []
 if 'tournament_name' not in st.session_state:
-    st.session_state.tournament_name = "JWR-Turnier"
+    st.session_state.tournament_name = "U15-Turnier"
 if 'tournament_date' not in st.session_state:
     st.session_state.tournament_date = datetime.now().date()
 if 'num_teams' not in st.session_state:
@@ -52,7 +52,7 @@ if 'players_per_team' not in st.session_state:
 if 'num_fields' not in st.session_state:
     st.session_state.num_fields = 1
 if 'team_selection' not in st.session_state:
-    st.session_state.team_selection = 'JWR'
+    st.session_state.team_selection = 'U15'
 if 'games_per_player' not in st.session_state:
     st.session_state.games_per_player = 3
 
@@ -1140,7 +1140,7 @@ def create_pdf_tournament_schedule(schedule, tournament_type, tournament_name, d
 
 def update_tournament_name_from_team():
     """Passt den Turniernamen automatisch an das ausgewählte Akademie-Team an."""
-    selected_team = st.session_state.get("team_selection", "JWR")
+    selected_team = st.session_state.get("team_selection", "U15")
     st.session_state.tournament_name = f"{selected_team}-Turnier"
     st.session_state.tournament_name_team = selected_team
 
@@ -1148,10 +1148,26 @@ def update_tournament_name_from_team():
 def main():
     st.title("🟢⚫ AKA-Turnier")
     
-    # Lade gespeicherte Daten beim Start
-    if not hasattr(st.session_state, 'data_loaded'):
-        load_tournament_data()
-        st.session_state.data_loaded = True
+    # Neue Browser-Sitzung immer mit einer leeren Turnieransicht starten.
+    # Gespeicherte Turnierdaten können weiterhin manuell über "Laden" geöffnet werden.
+    if "fresh_session_initialized" not in st.session_state:
+        st.cache_data.clear()
+        st.cache_resource.clear()
+
+        st.session_state.players = []
+        st.session_state.unavailable_players = []
+        st.session_state.teams = {}
+        st.session_state.team_colors = {}
+        st.session_state.schedule = []
+        st.session_state.tournament_name = "U15-Turnier"
+        st.session_state.tournament_date = datetime.now().date()
+        st.session_state.num_teams = 4
+        st.session_state.home_away = False
+        st.session_state.players_per_team = 2
+        st.session_state.num_fields = 1
+        st.session_state.team_selection = "U15"
+        st.session_state.tournament_name_team = "U15"
+        st.session_state.fresh_session_initialized = True
     
     # Sidebar für Navigation
     st.sidebar.title("Navigation")
@@ -1195,8 +1211,8 @@ def main():
                 team_options = ["U15", "U16", "U18", "JWR"]
                 # Beim ersten Start einen alten Standardnamen an das aktuell gewählte Team anpassen.
                 if "tournament_name_team" not in st.session_state:
-                    current_team = st.session_state.get("team_selection", "JWR")
-                    if st.session_state.tournament_name in ("JWR-Turnier", "AKA-Turnier", ""):
+                    current_team = st.session_state.get("team_selection", "U15")
+                    if st.session_state.tournament_name in ("JWR-Turnier", "AKA-Turnier", "U15-Turnier", ""):
                         st.session_state.tournament_name = f"{current_team}-Turnier"
                     st.session_state.tournament_name_team = current_team
 
@@ -1303,12 +1319,14 @@ def main():
                 st.session_state.teams = {}
                 st.session_state.team_colors = {}
                 st.session_state.schedule = []
-                st.session_state.tournament_name = "JWR-Turnier"
+                st.session_state.tournament_name = "U15-Turnier"
                 st.session_state.tournament_date = datetime.now().date()
                 st.session_state.num_teams = 4
                 st.session_state.home_away = False
                 st.session_state.players_per_team = 2
                 st.session_state.num_fields = 1
+                st.session_state.team_selection = "U15"
+                st.session_state.tournament_name_team = "U15"
                 save_tournament_data()
                 st.success("Gelöscht!")
                 st.rerun()
