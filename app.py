@@ -10,10 +10,18 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 import io
+from pathlib import Path
+
+# Alle lokalen Dateien immer relativ zum Ordner dieser App verwenden.
+# Dadurch funktioniert die App unabhängig vom aktuellen Arbeitsverzeichnis.
+BASE_DIR = Path(__file__).resolve().parent
+
+def app_file(filename: str) -> Path:
+    return BASE_DIR / filename
 
 # Page configuration
 st.set_page_config(
-    page_title="JWR-Turnier",
+    page_title="AKA-Turnier",
     page_icon="🟢",
     layout="wide"
 )
@@ -73,7 +81,7 @@ def get_team_color_icon(team_name):
 def load_players_from_file():
     """Lädt Spieler aus einer JSON-Datei"""
     try:
-        with open('players.json', 'r', encoding='utf-8') as f:
+        with app_file('players.json').open('r', encoding='utf-8') as f:
             data = json.load(f)
             if isinstance(data, dict):
                 return data.get('players', []), data.get('unavailable_players', []), data.get('team_colors', {})
@@ -85,9 +93,9 @@ def load_players_from_file():
 
 def load_team_players(team_name):
     """Lädt Spieler für ein spezifisches Team aus der entsprechenden JSON-Datei"""
-    filename = f"{team_name}.json"
+    filename = app_file(f"{team_name}.json")
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
+        with filename.open('r', encoding='utf-8') as f:
             data = json.load(f)
             if isinstance(data, dict):
                 return data.get('players', [])
@@ -109,20 +117,20 @@ def load_team_players(team_name):
 
 def save_team_players(team_name, players):
     """Speichert Spieler für ein spezifisches Team in der entsprechenden JSON-Datei"""
-    filename = f"{team_name}.json"
+    filename = app_file(f"{team_name}.json")
     data = {
         'players': players,
         'team_name': team_name,
         'last_updated': datetime.now().isoformat()
     }
-    with open(filename, 'w', encoding='utf-8') as f:
+    with filename.open('w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def migrate_players_to_team_files():
     """Migriert die aktuellen Spieler aus players.json zu JWR.json"""
     try:
         # Lade aktuelle Spieler
-        with open('players.json', 'r', encoding='utf-8') as f:
+        with app_file('players.json').open('r', encoding='utf-8') as f:
             data = json.load(f)
             if isinstance(data, dict):
                 players = data.get('players', [])
@@ -144,7 +152,7 @@ def save_players_to_file(players, unavailable_players, team_colors):
         'unavailable_players': unavailable_players,
         'team_colors': team_colors
     }
-    with open('players.json', 'w', encoding='utf-8') as f:
+    with app_file('players.json').open('w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def save_tournament_data():
@@ -163,7 +171,7 @@ def save_tournament_data():
         'players_per_team': st.session_state.players_per_team,
         'num_fields': st.session_state.num_fields
     }
-    with open('tournament_data.json', 'w', encoding='utf-8') as f:
+    with app_file('tournament_data.json').open('w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def save_tournament_as_file():
@@ -177,6 +185,7 @@ def save_tournament_as_file():
     safe_name = safe_name.replace(' ', '_')
     date_str = st.session_state.tournament_date.strftime('%Y%m%d')
     filename = f"turnier_{safe_name}_{date_str}.json"
+    file_path = app_file(filename)
     
     data = {
         'players': st.session_state.players,
@@ -195,7 +204,7 @@ def save_tournament_as_file():
     }
     
     try:
-        with open(filename, 'w', encoding='utf-8') as f:
+        with file_path.open('w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
         return filename
     except Exception as e:
@@ -235,7 +244,7 @@ def load_tournament_from_file(uploaded_file):
 def load_tournament_data():
     """Lädt alle Turnierdaten"""
     try:
-        with open('tournament_data.json', 'r', encoding='utf-8') as f:
+        with app_file('tournament_data.json').open('r', encoding='utf-8') as f:
             data = json.load(f)
             
             st.session_state.players = data.get('players', [])
@@ -698,12 +707,10 @@ def distribute_games_to_rounds(games, num_fields, round_type, swap_fields=False,
 
 def get_logo():
     """Lädt das Logo für das PDF - spezifisch ried.png"""
-    import os
+    # Suche spezifisch nach ried.png im App-Verzeichnis
+    logo_file = app_file('ried.png')
     
-    # Suche spezifisch nach ried.png
-    logo_file = 'ried.png'
-    
-    if os.path.exists(logo_file):
+    if logo_file.exists():
         try:
             # Lade das ried.png Logo
             logo = Image(logo_file, width=1.5*inch, height=0.75*inch)

@@ -50,7 +50,7 @@ Eine Streamlit-Anwendung zur Verwaltung von Fussball-Turnieren mit PDF-Export-Fu
 
 Das Logo `ried.png` sollte im gleichen Verzeichnis wie die App-Datei liegen:
 ```
-C:\Users\demmelb-ma\OneDrive - COC AG\JWR\Turnier\
+C:\Users\Franz\OneDrive\Akademie SVR\Turnier\
 ├── app.py
 ├── ried.png          ← Logo-Datei
 ├── requirements.txt
